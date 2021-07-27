@@ -118,9 +118,7 @@ for i in ip:
     if type(i) == str and i.count('.') == 3:
         ETHERNET_IP = i
 
-print(ETHERNET_IP)
-
-if ETHERNET_IP == None:
+if not ETHERNET_IP:
     print("Error detecting ethernet interface!")
     print("Reverting to localhost ip")
     ETHERNET_IP = 'localhost'
