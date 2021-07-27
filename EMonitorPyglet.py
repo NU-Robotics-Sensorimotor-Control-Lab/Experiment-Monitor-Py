@@ -1,8 +1,8 @@
-import socket, struct, pyglet
+import socket, struct, ifaddr, pyglet
 # import numpy as np
 
 class EMonitor:
-    def __init__(self, screen_index=0):
+    def __init__(self, ip='localhost', screen_index=0):
         self.n_sounds = 13
 
         # Initialize the target forces
@@ -25,7 +25,7 @@ class EMonitor:
         self.stop_trigger = 0
 
         # UDP Stuff
-        self.UDP_IP = 'localhost'
+        self.UDP_IP = ip
         self.UDP_PORT = 5005
 
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -106,6 +106,28 @@ class EMonitor:
         if data:
             self.unpack_udp_package(data)
 
+# First, get the IP address
+ip = None
+
+for adapter in ifaddr.get_adapters():
+    if adapter.ips[0].nice_name == 'Ethernet':
+        ip = [x.ip for x in adapter.ips]
+
+ETHERNET_IP = None
+for i in ip:
+    if type(i) == str and i.count('.') == 3:
+        ETHERNET_IP = i
+
+print(ETHERNET_IP)
+
+if ETHERNET_IP == None:
+    print("Error detecting ethernet interface!")
+    print("Reverting to localhost ip")
+    ETHERNET_IP = 'localhost'
+else:
+    print("Using Ethernet IP:", ETHERNET_IP)
+
+
 # Define RGB colors
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -157,7 +179,7 @@ for file in FILE_NAMES:
 print(f"Loaded {len(SOUND_CUES)} sounds successfully")
 
 # Initialize the EMonitor
-emonitor = EMonitor()
+emonitor = EMonitor(ETHERNET_IP)
 
 @event_loop.event
 def on_window_close(window):
