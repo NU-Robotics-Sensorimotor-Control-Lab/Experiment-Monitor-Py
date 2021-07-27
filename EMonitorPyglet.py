@@ -82,7 +82,7 @@ class EMonitor:
         print("Beginning UDP Socket connection")
         while self.thread_running:
             try:
-                data, = self.sock.recvfrom(1460)
+                data, addr = self.sock.recvfrom(1460)
 
                 self.unpack_udp_package(data)
             except BlockingIOError:
@@ -98,7 +98,8 @@ class EMonitor:
                 # This 1460 buffer size is connected to the buffer size in the
                 # MATLAB sending code; can likely be reduced for slightly
                 # faster IO
-                data, = self.sock.recvfrom(1460)
+                data, addr = self.sock.recvfrom(1460)
+ 
             except BlockingIOError:
                 break
 
