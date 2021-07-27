@@ -1,6 +1,7 @@
 import socket, struct, ifaddr, pyglet
 # import numpy as np
 
+
 class EMonitor:
     def __init__(self, ip='localhost', screen_index=0):
         self.n_sounds = 13
@@ -36,7 +37,6 @@ class EMonitor:
 
         # Graphics stuff below here
         self.thread_running = True
-
 
     def unpack_bytes_to_double(self, bytes):
         return struct.unpack('d', bytes)[0]
@@ -74,10 +74,9 @@ class EMonitor:
         self.matchF = self.unpack_bytes_to_double(data[56:64])
 
         for i in range(self.n_sounds):
-            self.sound_trigger[i] = bool(data[64+i])
+            self.sound_trigger[i] = bool(data[64 + i])
 
         self.stop_trigger = data[64 + self.n_sounds]
-
 
     def thread_recieve_udp(self):
         print("Beginning UDP Socket connection")
@@ -96,8 +95,8 @@ class EMonitor:
 
         while True:
             try:
-                # This 1460 buffer size is connected to the buffer size in the 
-                # MATLAB sending code; can likely be reduced for slightly 
+                # This 1460 buffer size is connected to the buffer size in the
+                # MATLAB sending code; can likely be reduced for slightly
                 # faster IO
                 data, = self.sock.recvfrom(1460)
             except BlockingIOError:
@@ -105,6 +104,7 @@ class EMonitor:
 
         if data:
             self.unpack_udp_package(data)
+
 
 # First, get the IP address
 ip = None
@@ -127,7 +127,6 @@ if ETHERNET_IP == None:
 else:
     print("Using Ethernet IP:", ETHERNET_IP)
 
-
 # Define RGB colors
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -146,7 +145,7 @@ if len(screens) >= SCREEN_INDEX:
 
 print(f"{SCREEN_INDEX = }")
 
-# Create objects for the pyglet window and fps display 
+# Create objects for the pyglet window and fps display
 window = pyglet.window.Window(fullscreen=True, screen=screens[SCREEN_INDEX])
 fps_display = pyglet.window.FPSDisplay(window=window)
 
@@ -155,19 +154,11 @@ pyglet.gl.glClearColor(*WHITE, 255)
 
 # Load the sounds
 SOUND_DIRECTORY = "C:\\Users\\pthms\\Desktop\\Local UDP Revamp\\soundCues\\"
-FILE_NAMES = ["hold.wav",
-              "in.wav",
-              "out.wav",
-              "match.wav",
-              "relax.wav",
-              "startingtrial.wav",
-              "endingtrial.wav",
-              "Out of Range.wav",
-              "Wrong Direction.wav",
-              "in.wav",
-              "out.wav",
-              "up.wav",
-              "down.wav"]
+FILE_NAMES = [
+    "hold.wav", "in.wav", "out.wav", "match.wav", "relax.wav",
+    "startingtrial.wav", "endingtrial.wav", "Out of Range.wav",
+    "Wrong Direction.wav", "in.wav", "out.wav", "up.wav", "down.wav"
+]
 
 SOUND_CUES = []
 for file in FILE_NAMES:
@@ -181,11 +172,13 @@ print(f"Loaded {len(SOUND_CUES)} sounds successfully")
 # Initialize the EMonitor
 emonitor = EMonitor(ETHERNET_IP)
 
+
 @event_loop.event
 def on_window_close(window):
     print("Hey")
     event_loop.exit()
     return pyglet.event.EVENT_HANDLED
+
 
 def custom_draw_circle_one_thick(x_center, y_center, radius, color, batch):
     # Implements mid-point circle drawing algorithm
@@ -203,7 +196,7 @@ def custom_draw_circle_one_thick(x_center, y_center, radius, color, batch):
     points.append([x_center, y_center - X])
 
     if radius > 0:
-        points.append([X + x_center, -Y  + y_center])
+        points.append([X + x_center, -Y + y_center])
         points.append([Y + x_center, X + y_center])
         points.append([-Y + x_center, X + y_center])
 
@@ -223,16 +216,16 @@ def custom_draw_circle_one_thick(x_center, y_center, radius, color, batch):
         if (X < Y):
             break
 
-        points.append([X + x_center, Y  + y_center])
-        points.append([-X + x_center, Y  + y_center])
-        points.append([X + x_center, -Y  + y_center])
-        points.append([-X + x_center, -Y  + y_center])
+        points.append([X + x_center, Y + y_center])
+        points.append([-X + x_center, Y + y_center])
+        points.append([X + x_center, -Y + y_center])
+        points.append([-X + x_center, -Y + y_center])
 
         if X != Y:
-            points.append([Y + x_center, X  + y_center])
-            points.append([-Y + x_center, X  + y_center])
-            points.append([Y + x_center, -X  + y_center])
-            points.append([-Y + x_center, -X  + y_center])
+            points.append([Y + x_center, X + y_center])
+            points.append([-Y + x_center, X + y_center])
+            points.append([Y + x_center, -X + y_center])
+            points.append([-Y + x_center, -X + y_center])
 
     num_points = len(points)
     # Concatanate points list; gl expects list in format [x0, y0, x1, y1...]
@@ -240,11 +233,9 @@ def custom_draw_circle_one_thick(x_center, y_center, radius, color, batch):
 
     color_list = color * num_points
 
-    batch.add(num_points, 
-              pyglet.gl.GL_POINTS,
-              None,
-              ('v2i', collapsed_points),
+    batch.add(num_points, pyglet.gl.GL_POINTS, None, ('v2i', collapsed_points),
               ('c3B', color_list))
+
 
 def custom_draw_circle(x_center, y_center, radius, color, thickness, batch):
     edges = min(thickness, radius)
@@ -253,32 +244,37 @@ def custom_draw_circle(x_center, y_center, radius, color, thickness, batch):
         rad = radius - t
 
         custom_draw_circle_one_thick(x_center, y_center, rad, color, batch)
-    
+
 
 def draw_circle(x, y, radius, color, bg_color, thickness, batch):
     a = pyglet.shapes.Circle(x, y, radius, color=color, batch=batch)
     b = None
 
-    if radius - (2*thickness) > 0:
-        b = pyglet.shapes.Circle(x, y, 
-                                 radius - (2 * thickness), 
-                                 color=bg_color, 
+    if radius - (2 * thickness) > 0:
+        b = pyglet.shapes.Circle(x,
+                                 y,
+                                 radius - (2 * thickness),
+                                 color=bg_color,
                                  batch=batch)
 
     return [a, b]
 
+
 def draw_full_line(y, length, color, width, batch):
-    return pyglet.shapes.Line(0, y, 
-                              length, y, 
-                              width=width, 
-                              color=color, 
+    return pyglet.shapes.Line(0,
+                              y,
+                              length,
+                              y,
+                              width=width,
+                              color=color,
                               batch=batch)
 
-@window.event    
+
+@window.event
 def on_draw():
     pyglet.clock.tick()
 
-    try: 
+    try:
         WIDTH = window.width
         HEIGHT = window.height
 
@@ -292,15 +288,18 @@ def on_draw():
             m.target_tor = 1
 
         match_target_radius = int(HEIGHT / 1.5)
-        lower_range_radius = int(match_target_radius * (m.low_lim_tor / m.target_tor))
-        upper_range_radius = int(match_target_radius * (m.up_lim_tor / m.target_tor))
-        representation_radius = int(match_target_radius * (m.match_tor / m.target_tor))
+        lower_range_radius = int(match_target_radius *
+                                 (m.low_lim_tor / m.target_tor))
+        upper_range_radius = int(match_target_radius *
+                                 (m.up_lim_tor / m.target_tor))
+        representation_radius = int(match_target_radius *
+                                    (m.match_tor / m.target_tor))
 
         # Code to set the moving Y coordinates
         targetF_line = center_y
         lowF_line = targetF_line * (m.low_limF / m.targetF)
         upF_line = targetF_line * (m.up_limF / m.targetF)
-        
+
         # The C# Code has matchY = center_y * ((2 - m.matchF) / m.targetF)
         # i'm not sure why the 2.0 - is present though, so I deleted it
         # This might have to be reintroduced sometime
@@ -310,31 +309,30 @@ def on_draw():
 
         radii = sorted([(match_target_radius, BLACK),
                         (lower_range_radius, BLUE),
-                        (upper_range_radius, BLUE)], reverse=True)
+                        (upper_range_radius, BLUE)],
+                       reverse=True)
 
-        lines = [(lowF_line, BLUE),
-                (upF_line, BLUE),
-                (matchY, RED),
-                (targetF_line, BLACK)]
+        lines = [(lowF_line, BLUE), (upF_line, BLUE), (matchY, RED),
+                 (targetF_line, BLACK)]
 
         batch = pyglet.graphics.Batch()
-        
-        # Using a array to hold the graphics objects, to ensure that they 
+
+        # Using a array to hold the graphics objects, to ensure that they
         # aren't destroyed before being drawn
 
         a = []
 
-        for radius in radii:    
+        for radius in radii:
             a.append(draw_circle(center_x, center_y, *radius, WHITE, 3, batch))
 
         for line in lines:
             a.append(draw_full_line(line[0], WIDTH, line[1], 3, batch))
 
-        # My custom drawing function is very slow, so only use it for the 
-        # moving circle 
-        a.append(custom_draw_circle(center_x, center_y,
-                                    representation_radius,
-                                    RED, 3, batch))
+        # My custom drawing function is very slow, so only use it for the
+        # moving circle
+        a.append(
+            custom_draw_circle(center_x, center_y, representation_radius, RED,
+                               3, batch))
 
         fps_display.draw()
         batch.draw()
@@ -345,19 +343,22 @@ def on_draw():
                 print(f"Sound {i} is playing")
                 emonitor.players.append(SOUND_CUES[i].play())
                 emonitor.sounds_playing[i] = True
-            
+
         if emonitor.stop_trigger:
             print("Stop sounds")
             while emonitor.players:
                 emonitor.players.pop().pause()
-                emonitor.sounds_playing = [False for i in range(emonitor.n_sounds)]
+                emonitor.sounds_playing = [
+                    False for i in range(emonitor.n_sounds)
+                ]
     except ZeroDivisionError:
         print("Zero division detected")
         pass
 
+
 if __name__ == "__main__":
     # This frequency will be tied to the frame rate
-    pyglet.clock.schedule_interval(emonitor.recieve_single_udp, 1/60.0)
+    pyglet.clock.schedule_interval(emonitor.recieve_single_udp, 1 / 60.0)
 
     # for testing purposes, remove on deployment
     SOUND_CUES[1].play()
