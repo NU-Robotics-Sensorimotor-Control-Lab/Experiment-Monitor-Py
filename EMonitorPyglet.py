@@ -78,15 +78,6 @@ class EMonitor:
 
         self.stop_trigger = data[64 + self.n_sounds]
 
-    def thread_recieve_udp(self):
-        print("Beginning UDP Socket connection")
-        while self.thread_running:
-            try:
-                data, addr = self.sock.recvfrom(1460)
-
-                self.unpack_udp_package(data)
-            except BlockingIOError:
-                pass
 
     def recieve_single_udp(self, dt):
         # Function clears udp buffer and uses the most recent udp message
@@ -339,12 +330,12 @@ def on_draw():
         # Sound stuff here
         for i in range(emonitor.n_sounds):
             if emonitor.sound_trigger[i] and not emonitor.sounds_playing[i]:
-                print(f"Sound {i} is playing")
+                # print(f"Sound {i} is playing")
                 emonitor.players.append(SOUND_CUES[i].play())
                 emonitor.sounds_playing[i] = True
 
         if emonitor.stop_trigger:
-            print("Stop sounds")
+            # print("Stop sounds")
             while emonitor.players:
                 emonitor.players.pop().pause()
                 emonitor.sounds_playing = [
@@ -358,8 +349,5 @@ def on_draw():
 if __name__ == "__main__":
     # This frequency will be tied to the frame rate
     pyglet.clock.schedule_interval(emonitor.recieve_single_udp, 1 / 60.0)
-
-    # for testing purposes, remove on deployment
-    SOUND_CUES[1].play()
 
     pyglet.app.run()
