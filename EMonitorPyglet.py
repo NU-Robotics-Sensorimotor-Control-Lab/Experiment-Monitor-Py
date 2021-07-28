@@ -1,3 +1,12 @@
+"""EMonitorPyglet
+
+Replaces .NET EMonitor for experiment at Northwestern RSC Lab
+
+Worklog:
+J. Bremen, July 2021
+ - Created program
+"""
+
 import socket, struct, ifaddr, pyglet
 # import numpy as np
 
@@ -78,7 +87,6 @@ class EMonitor:
 
         self.stop_trigger = data[64 + self.n_sounds]
 
-
     def recieve_single_udp(self, dt):
         # Function clears udp buffer and uses the most recent udp message
         # dt will not be used, but we need to give an extra input for pyglet
@@ -90,7 +98,7 @@ class EMonitor:
                 # MATLAB sending code; can likely be reduced for slightly
                 # faster IO
                 data, addr = self.sock.recvfrom(1460)
- 
+
             except BlockingIOError:
                 break
 
@@ -106,9 +114,11 @@ for adapter in ifaddr.get_adapters():
         ip = [x.ip for x in adapter.ips]
 
 ETHERNET_IP = None
-for i in ip:
-    if type(i) == str and i.count('.') == 3:
-        ETHERNET_IP = i
+
+if ip:
+    for i in ip:
+        if type(i) == str and i.count('.') == 3:
+            ETHERNET_IP = i
 
 if not ETHERNET_IP:
     print("Error detecting ethernet interface!")
@@ -129,7 +139,7 @@ display = pyglet.canvas.get_display()
 screens = display.get_screens()
 event_loop = pyglet.app.EventLoop()
 
-if len(screens) >= SCREEN_INDEX:
+if len(screens) <= SCREEN_INDEX:
     print("Using default display")
     SCREEN_INDEX = 0
 
@@ -318,8 +328,8 @@ def on_draw():
         for line in lines:
             a.append(draw_full_line(line[0], WIDTH, line[1], 3, batch))
 
-        # My custom drawing function is very slow, so only use it for the
-        # moving circle
+        # The custom drawing function is very slow, so only use it for the
+        # moving circle. Perhaps make this better someday?
         a.append(
             custom_draw_circle(center_x, center_y, representation_radius, RED,
                                3, batch))
@@ -338,9 +348,8 @@ def on_draw():
             # print("Stop sounds")
             while emonitor.players:
                 emonitor.players.pop().pause()
-                emonitor.sounds_playing = [
-                    False for i in range(emonitor.n_sounds)
-                ]
+                emonitor.sounds_playing = [False] * len(emonitor.n_sounds)
+
     except ZeroDivisionError:
         print("Zero division detected")
         pass
