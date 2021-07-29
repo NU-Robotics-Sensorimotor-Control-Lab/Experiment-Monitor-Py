@@ -348,7 +348,7 @@ def on_draw():
             # print("Stop sounds")
             while emonitor.players:
                 emonitor.players.pop().pause()
-                emonitor.sounds_playing = [False] * len(emonitor.n_sounds)
+            emonitor.sounds_playing = [False] * len(emonitor.n_sounds)
 
     except ZeroDivisionError:
         print("Zero division detected")
@@ -356,7 +356,7 @@ def on_draw():
 
 
 if __name__ == "__main__":
-    # This frequency will be tied to the frame rate
+    # This frequency will be tied to the frame rate, and is the rate at which new data is read in
     pyglet.clock.schedule_interval(emonitor.recieve_single_udp, 1 / 60.0)
 
     pyglet.app.run()
