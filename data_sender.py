@@ -1,6 +1,8 @@
 import socket
 import struct
 
+# Testing script; not in use
+
 # UDP_IP = "192.168.37.1"
 UDP_IP = "165.124.9.239"
 PORT = 5005
