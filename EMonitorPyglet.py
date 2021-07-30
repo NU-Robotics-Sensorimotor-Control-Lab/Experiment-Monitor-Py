@@ -2,17 +2,18 @@
 
 Replaces .NET EMonitor for experiment at Northwestern RSC Lab
 
+Press escape to exit!!!
+
 Worklog:
 J. Bremen, July 2021
  - Created program
 """
 
 import socket, struct, ifaddr, pyglet
-# import numpy as np
 
 
 class EMonitor:
-    def __init__(self, ip='localhost', screen_index=0):
+    def __init__(self, ip="localhost", port=5005, screen_index=0):
         self.n_sounds = 13
 
         # Initialize the target forces
@@ -29,14 +30,14 @@ class EMonitor:
         self.matchF = 1
 
         self.sound_trigger = [False for i in range(self.n_sounds)]
-        self.sounds_playing = list([False for i in range(self.n_sounds)])
+        self.sounds_playing = list([False] * self.n_sounds)
         self.players = []
 
         self.stop_trigger = 0
 
         # UDP Stuff
         self.UDP_IP = ip
-        self.UDP_PORT = 5005
+        self.UDP_PORT = port
 
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.bind((self.UDP_IP, self.UDP_PORT))
@@ -48,10 +49,10 @@ class EMonitor:
         self.thread_running = True
 
     def unpack_bytes_to_double(self, bytes):
-        return struct.unpack('d', bytes)[0]
+        return struct.unpack("d", bytes)[0]
 
     def unpack_udp_package(self, data):
-        '''
+        """
         Validate package size in bytes first
 
         Bytes structured as:
@@ -67,7 +68,7 @@ class EMonitor:
 
         64:64+n_sounds-1- one boolean byte for each sound cue (bool)
         64+n_sounds- one byte representing if sounds should be stopped (bool)
-        '''
+        """
         if len(data) != 65 + self.n_sounds:
             print("ERROR!")
             return
@@ -105,27 +106,47 @@ class EMonitor:
         if data:
             self.unpack_udp_package(data)
 
-
+# Ethernet setup
 # First, get the IP address
 ip = None
 
 for adapter in ifaddr.get_adapters():
-    if adapter.ips[0].nice_name == 'Ethernet':
+    if adapter.ips[0].nice_name == "Ethernet":
         ip = [x.ip for x in adapter.ips]
 
 ETHERNET_IP = None
+PORT = 5005
 
 if ip:
     for i in ip:
-        if type(i) == str and i.count('.') == 3:
+        if type(i) == str and i.count(".") == 3:
             ETHERNET_IP = i
 
 if not ETHERNET_IP:
-    print("Error detecting ethernet interface!")
+    print("Issue detecting ethernet interface!")
     print("Reverting to localhost ip")
-    ETHERNET_IP = 'localhost'
-else:
-    print("Using Ethernet IP:", ETHERNET_IP)
+    ETHERNET_IP = "localhost"
+
+print("Using Ethernet IP:", ETHERNET_IP)
+print("Using Ethernet Remote Port", PORT)
+
+"""
+    NOTE
+    
+    ETHERNET NOTES!
+
+    If issues with ethernet connection arise, I recommend first unplugging
+    and replugging in the ethernet wires in the switch (all of them)
+
+    If this fails, restart the PC with the Ethernet cable unplugged
+
+    If the NU Ethernet system is down, do not plug the Ethernet wire into the 
+    switch; this will prevent the computer from creating its own local ip
+
+    If the connection starts being slow, check the ping speeds with cmd prompt
+
+    Odds are it's due to a loose wire
+"""
 
 # Define RGB colors
 WHITE = (255, 255, 255)
@@ -155,22 +176,32 @@ pyglet.gl.glClearColor(*WHITE, 255)
 # Load the sounds
 SOUND_DIRECTORY = "C:\\Users\\pthms\\Desktop\\Local UDP Revamp\\soundCues\\"
 FILE_NAMES = [
-    "hold.wav", "in.wav", "out.wav", "match.wav", "relax.wav",
-    "startingtrial.wav", "endingtrial.wav", "Out of Range.wav",
-    "Wrong Direction.wav", "in.wav", "out.wav", "up.wav", "down.wav"
+    "hold.wav",
+    "in.wav",
+    "out.wav",
+    "match.wav",
+    "relax.wav",
+    "startingtrial.wav",
+    "endingtrial.wav",
+    "Out of Range.wav",
+    "Wrong Direction.wav",
+    "in.wav",
+    "out.wav",
+    "up.wav",
+    "down.wav",
 ]
 
 SOUND_CUES = []
 for file in FILE_NAMES:
     n = SOUND_DIRECTORY + file
 
-    print(f"Loading {n}")
+    # print(f"Loading {n}")
 
     SOUND_CUES.append(pyglet.media.load(n, streaming=False))
-print(f"Loaded {len(SOUND_CUES)} sounds successfully")
+print(f"Loaded {len(SOUND_CUES)} / {len(FILE_NAMES)} sounds successfully")
 
 # Initialize the EMonitor
-emonitor = EMonitor(ETHERNET_IP)
+emonitor = EMonitor(ETHERNET_IP, PORT)
 
 
 @event_loop.event
@@ -213,7 +244,7 @@ def custom_draw_circle_one_thick(x_center, y_center, radius, color, batch):
             X -= 1
             P = P + 2 * Y - 2 * X + 1
 
-        if (X < Y):
+        if X < Y:
             break
 
         points.append([X + x_center, Y + y_center])
@@ -233,8 +264,13 @@ def custom_draw_circle_one_thick(x_center, y_center, radius, color, batch):
 
     color_list = color * num_points
 
-    batch.add(num_points, pyglet.gl.GL_POINTS, None, ('v2i', collapsed_points),
-              ('c3B', color_list))
+    batch.add(
+        num_points,
+        pyglet.gl.GL_POINTS,
+        None,
+        ("v2i", collapsed_points),
+        ("c3B", color_list),
+    )
 
 
 def custom_draw_circle(x_center, y_center, radius, color, thickness, batch):
@@ -251,23 +287,15 @@ def draw_circle(x, y, radius, color, bg_color, thickness, batch):
     b = None
 
     if radius - (2 * thickness) > 0:
-        b = pyglet.shapes.Circle(x,
-                                 y,
-                                 radius - (2 * thickness),
-                                 color=bg_color,
-                                 batch=batch)
+        b = pyglet.shapes.Circle(
+            x, y, radius - (2 * thickness), color=bg_color, batch=batch
+        )
 
     return [a, b]
 
 
 def draw_full_line(y, length, color, width, batch):
-    return pyglet.shapes.Line(0,
-                              y,
-                              length,
-                              y,
-                              width=width,
-                              color=color,
-                              batch=batch)
+    return pyglet.shapes.Line(0, y, length, y, width=width, color=color, batch=batch)
 
 
 @window.event
@@ -284,42 +312,52 @@ def on_draw():
         # Define the radii of the circles
         m = emonitor
 
+        match_target_radius = int(HEIGHT / 1.5)
+        targetF_line = center_y
+
         if m.target_tor == 0:
             m.target_tor = 1
 
-        match_target_radius = int(HEIGHT / 1.5)
-        lower_range_radius = int(match_target_radius *
-                                 (m.low_lim_tor / m.target_tor))
-        upper_range_radius = int(match_target_radius *
-                                 (m.up_lim_tor / m.target_tor))
-        representation_radius = int(match_target_radius *
-                                    (m.match_tor / m.target_tor))
+        if m.targetF == 0:
+            m.targetF = 1
+
+        lower_range_radius = int(match_target_radius * (m.low_lim_tor / m.target_tor))
+        upper_range_radius = int(match_target_radius * (m.up_lim_tor / m.target_tor))
+        representation_radius = int(match_target_radius * (m.match_tor / m.target_tor))
 
         # Code to set the moving Y coordinates
-        targetF_line = center_y
+
         lowF_line = targetF_line * (m.low_limF / m.targetF)
         upF_line = targetF_line * (m.up_limF / m.targetF)
 
         # The C# Code has matchY = center_y * ((2 - m.matchF) / m.targetF)
         # i'm not sure why the 2.0 - is present though, so I deleted it
-        # This might have to be reintroduced sometime
+        # This might have to be reintroduced sometime, or could be a side
+        # effect of the way that # does graphics
         matchY = center_y * ((m.matchF) / m.targetF)
 
-        window.clear()
+        # Need to sort the radii, as the circles will draw on top of each other
+        radii = sorted(
+            [
+                (match_target_radius, BLACK),
+                (lower_range_radius, BLUE),
+                (upper_range_radius, BLUE),
+            ],
+            key=lambda t: t[0],
+            reverse=True,
+        )
 
-        radii = sorted([(match_target_radius, BLACK),
-                        (lower_range_radius, BLUE),
-                        (upper_range_radius, BLUE)],
-                       reverse=True)
-
-        lines = [(lowF_line, BLUE), (upF_line, BLUE), (matchY, RED),
-                 (targetF_line, BLACK)]
+        lines = [
+            (lowF_line, BLUE),
+            (upF_line, BLUE),
+            (matchY, RED),
+            (targetF_line, BLACK),
+        ]
 
         batch = pyglet.graphics.Batch()
 
         # Using a array to hold the graphics objects, to ensure that they
         # aren't destroyed before being drawn
-
         a = []
 
         for radius in radii:
@@ -330,11 +368,15 @@ def on_draw():
 
         # The custom drawing function is very slow, so only use it for the
         # moving circle. Perhaps make this better someday?
-        a.append(
-            custom_draw_circle(center_x, center_y, representation_radius, RED,
-                               3, batch))
 
+        window.clear()
         fps_display.draw()
+        batch.draw()
+
+        # Make a new batch to ensure that openGL optimization does not
+        # erase the moving circle
+        batch = pyglet.graphics.Batch()
+        custom_draw_circle(center_x, center_y, representation_radius, RED, 3, batch)
         batch.draw()
 
         # Sound stuff here
@@ -348,15 +390,16 @@ def on_draw():
             # print("Stop sounds")
             while emonitor.players:
                 emonitor.players.pop().pause()
-            emonitor.sounds_playing = [False] * len(emonitor.n_sounds)
+            emonitor.sounds_playing = [False] * emonitor.n_sounds
 
     except ZeroDivisionError:
         print("Zero division detected")
+        fps_display.draw()
         pass
 
 
 if __name__ == "__main__":
-    # This frequency will be tied to the frame rate, and is the rate at which new data is read in
-    pyglet.clock.schedule_interval(emonitor.recieve_single_udp, 1 / 60.0)
+    # Call the update function to be run on every frame
+    pyglet.clock.schedule(emonitor.recieve_single_udp)
 
     pyglet.app.run()
