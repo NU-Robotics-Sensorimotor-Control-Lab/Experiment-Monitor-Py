@@ -477,7 +477,7 @@ def draw_photos():
 def on_draw():
     pyglet.clock.tick()
 
-
+    # Note: emonitor.state is CurrState in act4D
     if emonitor.state == 0:
         draw_photos()
 
