@@ -9,7 +9,7 @@ J. Bremen, July 2021
  - Created program
 """
 
-import socket, struct, ifaddr, pyglet, os
+import socket, struct, ifaddr, pyglet, os, random
 
 
 class EMonitor:
@@ -51,6 +51,8 @@ class EMonitor:
 
         # Graphics stuff below here
         self.thread_running = True
+
+        self.last_image = None
 
     def unpack_bytes_to_double(self, bytes):
         return struct.unpack("d", bytes)[0]
@@ -221,7 +223,7 @@ photos = [
 for photo in photos:
     emonitor.graphics.append(pyglet.image.load(photo))
 
-print("Done loading photos")
+print(f"Loaded {len(emonitor.graphics)} photos")
 
 @event_loop.event
 def on_window_close(window):
@@ -417,7 +419,7 @@ def draw_normal_protocol():
 def draw_blank_window():
     try:
         window.clear()
-        fps_display.draw_circle
+        fps_display.draw()
 
         # Sound stuff here
         for i in range(emonitor.n_sounds):
@@ -432,14 +434,27 @@ def draw_blank_window():
                 emonitor.players.pop().pause()
             emonitor.sounds_playing = [False] * emonitor.n_sounds
 
-    except:
+    except ZeroDivisionError:
         print("Something bad occured drawing the blank window")
 
 
 def draw_photos():
     try:
         window.clear()
-        fps_display.draw_circle
+        fps_display.draw()
+
+        if not emonitor.last_image:
+            emonitor.last_image = random.choice(emonitor.graphics)
+
+        image = emonitor.last_image
+
+        window_center_x = window.width // 2
+        window_center_y = window.height // 2
+
+        im_x = window_center_x - (image.width // 2)
+        im_y = window_center_y - (image.height // 2)
+
+        image.blit(im_x, im_y)
 
         # Sound stuff here
         for i in range(emonitor.n_sounds):
@@ -464,14 +479,12 @@ def on_draw():
 
 
     if emonitor.state == 0:
-        draw_normal_protocol()
-
-    elif emonitor.state == 1:
-        draw_blank_window()
-
-    elif emonitor.state == 2:
         draw_photos()
 
+    else:
+        emonitor.last_image = None
+        draw_normal_protocol()
+        
 
 if __name__ == "__main__":
     # Call the update function to be run on every frame
