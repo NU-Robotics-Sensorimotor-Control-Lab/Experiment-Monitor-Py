@@ -6,6 +6,8 @@ Creates circles describing the range and produced torques, and a line that shows
 
 See Notes below for more details
 
+Contact (Jackson Bremen)[https://github.com/readjfb] with questions
+
 ## Notes:
 EMonitorPyglet.py is the original EMonitor, and is an accurate port of the .NET code.
 EMonitorPyglet_v2.py is a slightly altered EMonitor, and showes either images or a blank screen when in state zero. An altered ACT4D needs to be used, to transmit the current state
