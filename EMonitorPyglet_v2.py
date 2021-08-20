@@ -185,7 +185,7 @@ fps_display = pyglet.window.FPSDisplay(window=window)
 pyglet.gl.glClearColor(*WHITE, 255)
 
 # Load the sounds
-SOUND_DIRECTORY = "C:\\Users\\pthms\\Desktop\\Local UDP Revamp\\soundCues\\"
+SOUND_DIRECTORY = "soundCues\\"
 FILE_NAMES = [
     "hold.wav",
     "in.wav",
