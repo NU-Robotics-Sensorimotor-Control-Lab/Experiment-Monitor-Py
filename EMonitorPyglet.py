@@ -7,6 +7,8 @@ Press escape to exit!!!
 Worklog:
 J. Bremen, July 2021
  - Created program
+
+ - NOTE!! This file does not change based on state; always displays the circle
 """
 
 import socket, struct, ifaddr, pyglet
