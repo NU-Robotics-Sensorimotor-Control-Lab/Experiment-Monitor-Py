@@ -8,7 +8,7 @@ Worklog:
 J. Bremen, July 2021
  - Created program
 
- - NOTE!! This file does changes based on state; displays the images in the 
+ NOTE!! This file does change based on state; displays the images in the 
  images directory when the CurrState variable is sent
 """
 
@@ -117,6 +117,7 @@ class EMonitor:
         if data:
             self.unpack_udp_package(data)
 
+
 # Ethernet setup
 # First, get the IP address
 ip = None
@@ -219,14 +220,13 @@ dir_path = "images/"
 extensions = (".jpg", ".jpeg", ".png")
 folder_contents = [dir_path + name for name in os.listdir(dir_path)]
 
-photos = [
-    path for path in folder_contents if any(ext in path for ext in extensions)
-]
+photos = [path for path in folder_contents if any(ext in path for ext in extensions)]
 
 for photo in photos:
     emonitor.graphics.append(pyglet.image.load(photo))
 
 print(f"Loaded {len(emonitor.graphics)} photos")
+
 
 @event_loop.event
 def on_window_close(window):
@@ -486,14 +486,15 @@ def on_draw():
         if len(emonitor.graphics) == 0:
             draw_blank_window()
             return
-        
+
         draw_photos()
 
-    else:   
+    else:
         emonitor.last_image = None
         draw_normal_protocol()
-    
+
     # draw_normal_protocol()
+
 
 if __name__ == "__main__":
     # Call the update function to be run on every frame

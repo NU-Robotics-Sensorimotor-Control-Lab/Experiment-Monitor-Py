@@ -108,6 +108,7 @@ class EMonitor:
         if data:
             self.unpack_udp_package(data)
 
+
 # Ethernet setup
 # First, get the IP address
 ip = None
