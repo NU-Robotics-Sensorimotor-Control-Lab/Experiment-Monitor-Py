@@ -6,7 +6,7 @@ Creates circles describing the range and produced torques, and a line that shows
 
 See Notes below for more details
 
-Contact (Jackson Bremen)[https://github.com/readjfb] with questions
+Contact [Jackson Bremen](https://github.com/readjfb) with questions
 
 ## Notes:
 EMonitorPyglet.py is the original EMonitor, and is an accurate port of the .NET code.
